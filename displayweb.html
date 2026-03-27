@@ -3,57 +3,55 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Application</title>
+    <title>Smart Home App</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 40px; background: #f4f4f4; }
-        .card { max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        .page { display: none; } /* Hides all pages by default */
-        .active { display: block; } /* Shows the current step */
+        /* Shared styles from your base.html */
+        body { font-family: Arial, sans-serif; margin: 40px; background: #f0f2f5; }
+        .card { max-width: 420px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; margin: auto; }
+        .page { display: none; } /* Hide all pages */
+        .active { display: block; } /* Show only the active page */
         input { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
-        button { padding: 10px 14px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 5px; }
-        .back-link { color: #666; text-decoration: none; font-size: 14px; margin-bottom: 10px; display: inline-block; }
+        button { padding: 10px 14px; cursor: pointer; background: #2446ff; color: white; border: none; border-radius: 8px; font-weight: bold; width: 100%; }
+        .back-link { display: inline-block; margin-bottom: 8px; text-decoration: none; color: #6b3fa0; font-weight: 600; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div id="login-step" class="page active">
+    <div id="login-page" class="page active">
         <h2>Login</h2>
-        <input type="text" placeholder="Username" id="user">
+        <input type="text" placeholder="Username">
         <input type="password" placeholder="Password">
-        <button onclick="navigate('dashboard-step')">Login</button>
+        <button onclick="showPage('dashboard-page')">Login</button>
     </div>
 
-    <div id="dashboard-step" class="page">
+    <div id="dashboard-page" class="page">
         <h2>Dashboard</h2>
-        <p>Welcome! Select a room to manage.</p>
-        <button onclick="navigate('room-step')">Go to Room 1</button>
-        <br><br>
-        <a href="#" onclick="navigate('login-step')">Logout</a>
+        <p>Welcome, User! 🎉</p>
+        <button onclick="showPage('room-page')">Go to Room 1</button>
+        <p><a href="#" onclick="showPage('login-page')">Logout</a></p>
     </div>
 
-    <div id="room-step" class="page">
-        <a href="#" class="back-link" onclick="navigate('dashboard-step')">← Back to Dashboard</a>
+    <div id="room-page" class="page">
+        <span class="back-link" onclick="showPage('dashboard-page')">← Back</span>
         <h2>Room Control</h2>
-        <div style="border: 1px dashed #ccc; padding: 15px;">
+        <div style="padding: 10px; border: 1px solid #eee; border-radius: 10px;">
             <h3>Lights</h3>
-            <button>L1</button> <button>L2</button>
+            <button style="width: 45%; margin-bottom: 5px;">L1</button>
+            <button style="width: 45%; margin-bottom: 5px;">L2</button>
             <h3>AC</h3>
-            <button>ON/OFF</button>
+            <button>ON / OFF</button>
         </div>
     </div>
 </div>
 
 <script>
-    // The "Step-by-Step" logic
-    function navigate(nextStepId) {
-        // 1. Hide all sections
-        document.querySelectorAll('.page').forEach(page => {
-            page.classList.remove('active');
-        });
-        
-        // 2. Show the requested section
-        document.getElementById(nextStepId).classList.add('active');
+    // The "Step-by-Step" navigation logic
+    function showPage(pageId) {
+        // Hide all elements with the class 'page'
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        // Show the one page we want
+        document.getElementById(pageId).classList.add('active');
     }
 </script>
 
