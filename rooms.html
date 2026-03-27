@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Rooms</h2>
+
+<div class="rooms">
+  {% for r in rooms %}
+    <a class="room-btn" href="{{ url_for('room', room_id=r.id) }}">{{ r.name }}</a>
+  {% endfor %}
+</div>
+
+<style>
+  .rooms { display: grid; gap: 10px; }
+  .room-btn{
+    display:block; padding:14px; text-align:center;
+    border:1px solid #333; border-radius:10px;
+    background:#0d0d0d; color:#fff;
+  }
+  .room-btn:hover{ opacity:.9; }
+</style>
+{% endblock %}

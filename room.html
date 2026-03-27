@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+{% block content %}
+<a class="back-link" href="{{ url_for('dashboard') }}">← Back</a>
+<h2 class="page-title">Room {{ room_id }}</h2>
+
+<div class="room-layout">
+  <!-- Left panel -->
+  <div class="panel">
+    <div class="section">
+      <h3>Lights</h3>
+      <div class="btn-grid lights-grid">
+        <button class="btn" data-toggle="l1">L1</button>
+        <button class="btn" data-toggle="l2">L2</button>
+        <button class="btn" data-toggle="l3">L3</button>
+        <button class="btn" data-toggle="l4">L4</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h3>Projector</h3>
+      <button class="btn wide" data-toggle="projector">ON / OFF</button>
+    </div>
+  </div>
+
+  <!-- Right panel -->
+  <div class="panel">
+    <div class="section">
+      <div class="section-head">
+        <h3>AC</h3>
+        <button class="btn" data-toggle="ac">ON / OFF</button>
+      </div>
+
+      <div class="temp-row">
+        <span class="label">Temp</span>
+        <button class="btn small" id="tempDown">−</button>
+        <span class="temp-value" id="tempVal">{{ state["temperature"] }}</span>
+        <button class="btn small" id="tempUp">+</button>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn" data-toggle="swing_v">SwingV</button>
+        <button class="btn" data-toggle="swing_h">SwingH</button>
+        <button class="btn" id="fanBtn">Fan</button>
+        <button class="btn" id="modeBtn">Mode</button>
+      </div>
+
+      <div class="status-grid">
+        <div class="status-item"><span>Fan speed</span><b id="fanVal">{{ state["fan_speed"] }}</b></div>
+        <div class="status-item"><span>Mode</span><b id="modeVal">{{ state["mode"] }}</b></div>
+        <div class="status-item"><span>SwingV</span><b id="swingVVal">{{ "auto" if state["swing_v"] else "off" }}</b></div>
+        <div class="status-item"><span>SwingH</span><b id="swingHVal">{{ "auto" if state["swing_h"] else "off" }}</b></div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="chart-head">
+        <h3>kWh Usage</h3>
+        <span class="muted">Monthly</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="kwhChart" width="560" height="260"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .back-link{
+    display:inline-block;
+    margin-bottom:8px;
+    text-decoration:none;
+    color:#6b3fa0;
+    font-weight:600;
+  }
+
+  .page-title{
+    margin:0 0 14px 0;
+    font-size:24px;
+  }
+
+  .room-layout{
+    display:grid;
+    grid-template-columns: 280px minmax(560px, 1fr);
+    gap:18px;
+    align-items:start;
+  }
+
+  .panel{
+    background:#fff;
+    border:1px solid #e4e4e4;
+    border-radius:16px;
+    padding:16px;
+  }
+
+  .section + .section{
+    margin-top:18px;
+    padding-top:16px;
+    border-top:1px solid #f0f0f0;
+  }
+
+  .section h3{
+    margin:0 0 12px 0;
+    font-size:18px;
+  }
+
+  .section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:10px;
+  }
+
+  .btn-grid{
+    display:grid;
+    gap:10px;
+  }
+
+  .lights-grid{
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+
+  .btn-row{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:12px;
+  }
+
+  .btn{
+    background:#2446ff;
+    color:#fff;
+    border:0;
+    border-radius:12px;
+    padding:10px 14px;
+    min-width:72px;
+    font-weight:600;
+    cursor:pointer;
+    transition:transform .05s ease, opacity .15s ease;
+  }
+
+  .btn:hover{ opacity:.95; }
+  .btn:active{ transform:translateY(1px); }
+
+  .btn.small{
+    padding:6px 12px;
+    min-width:auto;
+    border-radius:10px;
+    font-size:16px;
+    line-height:1;
+  }
+
+  .btn.wide{
+    min-width:120px;
+  }
+
+  .btn.off{
+    background:#4b4b4b;
+  }
+
+  .temp-row{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:6px;
+  }
+
+  .temp-row .label{
+    min-width:46px;
+    font-weight:500;
+  }
+
+  .temp-value{
+    min-width:28px;
+    text-align:center;
+    font-weight:700;
+    font-size:20px;
+  }
+
+  .status-grid{
+    margin-top:14px;
+    display:grid;
+    grid-template-columns: repeat(2, minmax(0,1fr));
+    gap:10px;
+  }
+
+  .status-item{
+    border:1px solid #ececec;
+    background:#fafafa;
+    border-radius:12px;
+    padding:10px 12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+  }
+
+  .status-item span{
+    color:#555;
+    font-size:14px;
+  }
+
+  .status-item b{
+    font-size:15px;
+    text-transform:lowercase;
+  }
+
+  .chart-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:10px;
+  }
+
+  .chart-head h3{
+    margin:0;
+  }
+
+  .muted{
+    color:#777;
+    font-size:13px;
+  }
+
+  .chart-wrap{
+    border:1px solid #ececec;
+    border-radius:14px;
+    background:#fcfcfc;
+    padding:10px;
+    overflow:auto;
+  }
+
+  canvas{
+    display:block;
+    width:100%;
+    max-width:100%;
+    height:auto;
+  }
+
+  @media (max-width: 980px){
+    .room-layout{
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script>
+  let state = {{ state|tojson|safe }};
+
+  function applyStateUI() {
+    const map = ["l1","l2","l3","l4","projector","ac","swing_v","swing_h"];
+    for (const k of map) {
+      const btn = document.querySelector(`[data-toggle="${k}"]`);
+      if (!btn) continue;
+      btn.classList.toggle("off", state[k] === 0);
+    }
+
+    document.getElementById("tempVal").textContent  = state["temperature"];
+    document.getElementById("fanVal").textContent   = state["fan_speed"];
+    document.getElementById("modeVal").textContent  = state["mode"];
+    document.getElementById("swingVVal").textContent = state["swing_v"] ? "auto" : "off";
+    document.getElementById("swingHVal").textContent = state["swing_h"] ? "auto" : "off";
+  }
+
+  async function toggle(device) {
+    const res = await fetch(`/api/room/{{ room_id }}/toggle`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({device})
+    });
+    const data = await res.json();
+    if (data.ok) {
+      state = data.state;
+      applyStateUI();
+    } else {
+      alert(data.error || "Error");
+    }
+  }
+
+  async function updateAC(patch) {
+    const res = await fetch(`/api/room/{{ room_id }}/ac`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify(patch)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      state = data.state;
+      applyStateUI();
+    } else {
+      alert(data.error || "Error");
+    }
+  }
+
+  document.querySelectorAll("[data-toggle]").forEach(b => {
+    b.addEventListener("click", () => toggle(b.dataset.toggle));
+  });
+
+  document.getElementById("tempDown").onclick = () => updateAC({temperature: state["temperature"] - 1});
+  document.getElementById("tempUp").onclick   = () => updateAC({temperature: state["temperature"] + 1});
+
+  document.getElementById("fanBtn").onclick = () => {
+    const next = (state["fan_speed"] % 5) + 1;
+    updateAC({fan_speed: next});
+  };
+
+  const modes = ["cool","auto","dry","fan"];
+  document.getElementById("modeBtn").onclick = () => {
+    const idx = modes.indexOf(state["mode"]);
+    const next = modes[(idx + 1) % modes.length];
+    updateAC({mode: next});
+  };
+
+  // Chart with labels/grid
+  const labels = {{ kwh_labels|tojson|safe }};
+  const values = {{ kwh_values|tojson|safe }};
+  const canvas = document.getElementById("kwhChart");
+  const ctx = canvas.getContext("2d");
+
+  function drawChart() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const padL = 44, padR = 12, padT = 10, padB = 30;
+    const w = canvas.width - padL - padR;
+    const h = canvas.height - padT - padB;
+
+    const maxV = Math.max(...values);
+    const minV = Math.min(...values);
+    const yMin = Math.floor(minV / 10) * 10;
+    const yMax = Math.ceil(maxV / 10) * 10 || 10;
+
+    // grid + Y labels
+    const ticks = 5;
+    ctx.font = "12px Arial";
+    for (let i = 0; i <= ticks; i++) {
+      const t = i / ticks;
+      const y = padT + h - t * h;
+      const v = Math.round(yMin + t * (yMax - yMin));
+
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + w, y);
+      ctx.strokeStyle = "#e7e7e7";
+      ctx.stroke();
+
+      ctx.fillStyle = "#666";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+      ctx.fillText(String(v), padL - 6, y);
+    }
+
+    // axes
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, padT + h);
+    ctx.lineTo(padL + w, padT + h);
+    ctx.strokeStyle = "#666";
+    ctx.stroke();
+
+    // x labels
+    const stepX = w / (values.length - 1);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    ctx.fillStyle = "#666";
+
+    for (let i = 0; i < labels.length; i++) {
+      const x = padL + i * stepX;
+      ctx.beginPath();
+      ctx.moveTo(x, padT + h);
+      ctx.lineTo(x, padT + h + 4);
+      ctx.strokeStyle = "#666";
+      ctx.stroke();
+      ctx.fillText(String(labels[i]), x, padT + h + 6);
+    }
+
+    // line
+    ctx.beginPath();
+    values.forEach((v, i) => {
+      const x = padL + i * stepX;
+      const y = padT + h - ((v - yMin) / (yMax - yMin || 1)) * h;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // points
+    values.forEach((v, i) => {
+      const x = padL + i * stepX;
+      const y = padT + h - ((v - yMin) / (yMax - yMin || 1)) * h;
+      ctx.beginPath();
+      ctx.arc(x, y, 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#111";
+      ctx.fill();
+    });
+
+    ctx.lineWidth = 1;
+  }
+
+  applyStateUI();
+  drawChart();
+</script>
+{% endblock %}
