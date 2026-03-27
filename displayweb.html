@@ -5,14 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Smart Home App</title>
     <style>
-        /* Shared styles from your base.html */
+        /* Styles from your base.html */
         body { font-family: Arial, sans-serif; margin: 40px; background: #f0f2f5; }
-        .card { max-width: 420px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; margin: auto; }
-        .page { display: none; } /* Hide all pages */
-        .active { display: block; } /* Show only the active page */
+        .card { max-width: 800px; padding: 20px; border: 1px solid #ddd; border-radius: 10px; background: white; margin: auto; }
+        .page { display: none; } 
+        .active { display: block; }
         input { width: 100%; padding: 10px; margin: 8px 0; box-sizing: border-box; }
-        button { padding: 10px 14px; cursor: pointer; background: #2446ff; color: white; border: none; border-radius: 8px; font-weight: bold; width: 100%; }
-        .back-link { display: inline-block; margin-bottom: 8px; text-decoration: none; color: #6b3fa0; font-weight: 600; cursor: pointer; }
+        button { padding: 10px 14px; cursor: pointer; border: none; border-radius: 8px; font-weight: bold; }
+        
+        /* Styles from your room.html */
+        .room-layout { display: grid; grid-template-columns: 280px 1fr; gap: 18px; }
+        .panel { border: 1px solid #e4e4e4; border-radius: 16px; padding: 16px; margin-bottom: 10px; }
+        .btn { background: #2446ff; color: #fff; min-width: 72px; margin: 5px; }
+        .btn.off { background: #4b4b4b; }
+        .back-link { color: #6b3fa0; text-decoration: none; font-weight: 600; cursor: pointer; display: block; margin-bottom: 15px; }
     </style>
 </head>
 <body>
@@ -20,38 +26,60 @@
 <div class="card">
     <div id="login-page" class="page active">
         <h2>Login</h2>
-        <input type="text" placeholder="Username">
-        <input type="password" placeholder="Password">
-        <button onclick="showPage('dashboard-page')">Login</button>
+        <label>Username</label>
+        <input type="text" id="username">
+        <label>Password</label>
+        <input type="password">
+        <button class="btn" onclick="showPage('dashboard-page')">Login</button>
     </div>
 
     <div id="dashboard-page" class="page">
         <h2>Dashboard</h2>
-        <p>Welcome, User! 🎉</p>
-        <button onclick="showPage('room-page')">Go to Room 1</button>
+        <p>Welcome to your Smart Home Dashboard!</p>
+        <div style="display: grid; gap: 10px;">
+            <button class="btn" style="height: 60px;" onclick="showPage('room-page')">Go to Room 101</button>
+        </div>
         <p><a href="#" onclick="showPage('login-page')">Logout</a></p>
     </div>
 
     <div id="room-page" class="page">
-        <span class="back-link" onclick="showPage('dashboard-page')">← Back</span>
-        <h2>Room Control</h2>
-        <div style="padding: 10px; border: 1px solid #eee; border-radius: 10px;">
-            <h3>Lights</h3>
-            <button style="width: 45%; margin-bottom: 5px;">L1</button>
-            <button style="width: 45%; margin-bottom: 5px;">L2</button>
-            <h3>AC</h3>
-            <button>ON / OFF</button>
+        <span class="back-link" onclick="showPage('dashboard-page')">← Back to Dashboard</span>
+        <h2 class="page-title">Room 101</h2>
+
+        <div class="room-layout">
+            <div class="panel">
+                <h3>Lights</h3>
+                <button class="btn" onclick="this.classList.toggle('off')">L1</button>
+                <button class="btn" onclick="this.classList.toggle('off')">L2</button>
+                <h3>Projector</h3>
+                <button class="btn" style="width:100%" onclick="this.classList.toggle('off')">ON / OFF</button>
+            </div>
+
+            <div class="panel">
+                <h3>AC Control</h3>
+                <button class="btn" onclick="this.classList.toggle('off')">AC ON/OFF</button>
+                <div style="margin-top:15px; font-size: 20px;">
+                    Temp: <button class="btn" onclick="changeTemp(-1)">-</button>
+                    <span id="tempVal">24</span>°C
+                    <button class="btn" onclick="changeTemp(1)">+</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    // The "Step-by-Step" navigation logic
+    // Step-by-Step Navigation Logic
     function showPage(pageId) {
-        // Hide all elements with the class 'page'
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        // Show the one page we want
         document.getElementById(pageId).classList.add('active');
+    }
+
+    // Room Logic from your room.html
+    function changeTemp(amount) {
+        let el = document.getElementById('tempVal');
+        let current = parseInt(el.innerText);
+        el.innerText = current + amount;
     }
 </script>
 
